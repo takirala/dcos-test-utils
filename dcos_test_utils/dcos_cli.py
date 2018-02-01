@@ -72,6 +72,27 @@ class DcosCli():
         :rtype: (str, str)
         """
 
+        _, stdout, stderr = self.exec_command_with_code(cmd, stdin, True)
+        return (stdout, stderr)
+
+    def exec_command_with_code(self, cmd, stdin=None, check=False):
+        """Execute CLI command and processes result.
+
+        This method expects that process won't block.
+
+        :param cmd: Program and arguments
+        :type cmd: [str]
+        :param check: File to use for stdin
+        :type stdin: file
+        :param check: If check is True and the exit code was non-zero, it raises
+                    a CalledProcessError. The CalledProcessError object will
+                    have the return code in the returncode attribute, and output
+                     & stderr attributes if those streams were captured.
+        :type check: bool
+        :returns: A tuple with stdout and stderr
+        :rtype: (int, str, str)
+        """
+
         log.info('CMD: {!r}'.format(cmd))
 
         process = subprocess.run(
@@ -80,14 +101,15 @@ class DcosCli():
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=self.env,
-            check=True)
+            check=check)
 
-        stdout, stderr = process.stdout.decode('utf-8'), process.stderr.decode('utf-8')
+        stdout, stderr = process.stdout.decode('utf-8'), process.stderr.decode(
+            'utf-8')
 
         log.info('STDOUT: {}'.format(stdout))
         log.info('STDERR: {}'.format(stderr))
 
-        return (stdout, stderr)
+        return (process.returncode, stdout, stderr)
 
     def setup_enterprise(self, url, username=None, password=None):
         if not username:
